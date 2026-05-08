@@ -1260,11 +1260,13 @@ const S = {
 let installPrompt = null;
 
 function go(n) {
-  const cur = document.getElementById('s'+S.screen);
-  const nxt = document.getElementById('s'+n);
-  if (!nxt) return;
+  const toId  = typeof n       === 'number' ? 's'+n       : n;
+  const curId = typeof S.screen === 'number' ? 's'+S.screen : S.screen;
+  const cur = document.getElementById(curId);
+  const nxt = document.getElementById(toId);
+  if (!nxt || !cur) return;
   cur.classList.remove('active');
-  if (n > S.screen) cur.classList.add('leaving');
+  if (typeof n === 'number' && n > S.screen) cur.classList.add('leaving');
   setTimeout(() => cur.classList.remove('leaving'), 400);
   nxt.classList.add('active');
   S.screen = n;
@@ -1309,7 +1311,7 @@ window.addEventListener('load', () => {
       showBottomNav();
       go(1);
     } else {
-      go('auth');
+      go('s-auth');
     }
   }, 2400);
 });
@@ -1824,7 +1826,7 @@ function signOut() {
   document.getElementById('s0').classList.add('active');
   S.screen = 0;
   S.photos = []; S.damage = null; S.shopId = null;
-  setTimeout(() => go('auth'), 100);
+  setTimeout(() => go('s-auth'), 100);
 }
 
 /* =====================================================================
@@ -1850,11 +1852,11 @@ function navTo(tab) {
   } else if (tab === 'services') {
     document.getElementById('bnav-svcs').classList.add('active');
     renderServices();
-    go('services');
+    go('s-services');
   } else if (tab === 'profile') {
     document.getElementById('bnav-prof').classList.add('active');
     renderServices();
-    go('services');
+    go('s-services');
   }
 }
 
