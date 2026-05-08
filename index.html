@@ -588,6 +588,133 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
 .mt8{margin-top:8px}
 .mt16{margin-top:16px}
 
+/* ===================== BOTTOM NAV ===================== */
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:var(--surf);border-top:1px solid var(--border);
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#bottom-nav.hidden{display:none!important}
+.bnav-tab{
+  flex:1;padding:10px 8px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--muted);font-size:0.68rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.5px;
+  transition:color var(--t);
+}
+.bnav-tab.active{color:var(--primary)}
+.bnav-tab .ni{font-size:1.3rem;line-height:1}
+
+/* Push screen content above bottom nav when nav is visible */
+.has-nav .s-body{padding-bottom:72px}
+.has-nav .s-footer{padding-bottom:calc(16px + 56px + env(safe-area-inset-bottom))}
+
+/* ===================== AUTH SCREEN ===================== */
+#s-auth{background:linear-gradient(160deg,#0a0f1e 0%,#0d1830 100%)}
+.auth-logo{text-align:center;padding:48px 0 28px}
+.auth-logo img{width:72px;height:72px;margin-bottom:14px}
+.auth-logo h1{font-size:1.9rem;font-weight:900}
+.auth-logo h1 span{color:var(--primary)}
+.auth-logo p{color:var(--dim);font-size:0.88rem;margin-top:6px}
+
+.auth-tabs{
+  display:flex;gap:0;
+  background:var(--surf);border-radius:var(--r);
+  padding:4px;margin-bottom:20px;
+}
+.auth-tab{
+  flex:1;padding:10px;border-radius:calc(var(--r) - 3px);
+  font-size:0.9rem;font-weight:700;color:var(--muted);
+  transition:all var(--t);
+}
+.auth-tab.active{background:var(--primary);color:#fff;box-shadow:0 2px 10px var(--glow)}
+
+.auth-err{
+  padding:10px 12px;border-radius:var(--r);
+  background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+  color:var(--red);font-size:0.82rem;margin-top:-6px;margin-bottom:10px;
+}
+.forgot-link{
+  text-align:right;font-size:0.78rem;
+  color:var(--primary);margin-top:-8px;margin-bottom:14px;cursor:pointer;
+}
+.guest-link{
+  text-align:center;font-size:0.8rem;color:var(--muted);
+  margin-top:12px;cursor:pointer;
+}
+.guest-link span{color:var(--dim)}
+
+/* ===================== MY SERVICES ===================== */
+#s-services .s-body{padding-bottom:80px}
+
+.profile-strip{
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,rgba(255,107,53,0.12),rgba(255,107,53,0.04));
+  border:1px solid rgba(255,107,53,0.2);
+  border-radius:var(--r2);padding:16px;margin-bottom:22px;
+}
+.avatar-circle{
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#e85a20);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;font-weight:900;color:#fff;flex-shrink:0;
+  text-transform:uppercase;
+}
+.profile-name{font-size:1rem;font-weight:800}
+.profile-email{font-size:0.78rem;color:var(--dim);margin-top:2px}
+.profile-since{font-size:0.72rem;color:var(--muted);margin-top:2px}
+
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-bottom:22px;
+}
+.stat-box{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 10px;text-align:center;
+}
+.stat-val{font-size:1.4rem;font-weight:900;color:var(--primary)}
+.stat-label{font-size:0.68rem;color:var(--dim);margin-top:2px;text-transform:uppercase;letter-spacing:0.4px}
+
+.svc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.svc-head h3{font-size:1rem;font-weight:800}
+.svc-head span{font-size:0.78rem;color:var(--dim)}
+
+.svc-empty{
+  text-align:center;padding:40px 20px;
+  color:var(--muted);font-size:0.9rem;
+}
+.svc-empty .big{font-size:2.8rem;display:block;margin-bottom:12px}
+
+.svc-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r2);padding:16px;margin-bottom:10px;
+}
+.svc-card-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.svc-icon{
+  width:40px;height:40px;border-radius:var(--r);
+  background:var(--surf2);display:flex;align-items:center;
+  justify-content:center;font-size:1.2rem;flex-shrink:0;
+}
+.svc-shop{font-size:0.92rem;font-weight:700}
+.svc-date{font-size:0.75rem;color:var(--dim);margin-top:2px}
+.svc-status{
+  margin-left:auto;padding:3px 9px;border-radius:20px;
+  font-size:0.68rem;font-weight:700;white-space:nowrap;
+}
+.status-scheduled{background:rgba(59,130,246,0.15);color:var(--blue)}
+.status-completed{background:rgba(16,185,129,0.15);color:var(--green)}
+.status-progress{background:rgba(245,158,11,0.15);color:var(--amber)}
+.svc-dmg{
+  font-size:0.8rem;color:var(--dim);
+  display:flex;align-items:center;gap:6px;
+  padding-top:8px;border-top:1px solid var(--border);
+}
+.svc-id{font-size:0.7rem;color:var(--muted);margin-top:4px;font-family:monospace}
+
 /* ===================== SCROLLBAR ===================== */
 ::-webkit-scrollbar{width:0}
 </style>
@@ -610,6 +737,76 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
     <span class="arrow" id="ios-close">✕</span>
   </div>
 
+  <!-- ── BOTTOM NAV (shown when logged in) ── -->
+  <nav id="bottom-nav" class="hidden">
+    <button class="bnav-tab active" id="bnav-home" onclick="navTo('home')">
+      <span class="ni">🚗</span>New Service
+    </button>
+    <button class="bnav-tab" id="bnav-svcs" onclick="navTo('services')">
+      <span class="ni">📋</span>My Services
+    </button>
+    <button class="bnav-tab" id="bnav-prof" onclick="navTo('profile')">
+      <span class="ni">👤</span>Profile
+    </button>
+  </nav>
+
+  <!-- ══════════════ SCREEN AUTH — LOGIN / REGISTER ══════════════ -->
+  <div class="screen" id="s-auth">
+    <div class="s-body">
+      <div class="auth-logo">
+        <img src="icons/icon.svg" alt="AutoCare AI">
+        <h1>AutoCare <span>AI</span></h1>
+        <p>Sign in to book services &amp; track your repairs</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-reg" onclick="switchTab('reg')">Create Account</button>
+      </div>
+
+      <!-- Login form -->
+      <div id="form-login">
+        <div class="field">
+          <label>Email Address</label>
+          <input class="inp" id="li-email" type="email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input class="inp" id="li-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <p class="forgot-link" onclick="forgotPwd()">Forgot password?</p>
+        <div class="auth-err hidden" id="li-err"></div>
+      </div>
+
+      <!-- Register form -->
+      <div id="form-reg" class="hidden">
+        <div class="field">
+          <label>Full Name</label>
+          <input class="inp" id="rg-name" type="text" placeholder="John Smith" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input class="inp" id="rg-email" type="email" placeholder="you@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input class="inp" id="rg-pass" type="password" placeholder="Min 6 characters" autocomplete="new-password">
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input class="inp" id="rg-phone" type="tel" placeholder="+1 (555) 000-0000" autocomplete="tel">
+        </div>
+        <div class="auth-err hidden" id="rg-err"></div>
+      </div>
+    </div>
+    <div class="s-footer">
+      <button class="btn-primary" id="auth-btn" onclick="doAuth()">
+        Sign In <span class="btn-arrow">→</span>
+      </button>
+      <p class="guest-link" onclick="continueGuest()"><span>Skip — </span>Continue as Guest</p>
+    </div>
+  </div>
+
   <!-- ══════════════ SCREEN 0 — SPLASH ══════════════ -->
   <div class="screen active" id="s0">
     <div class="splash-wrap">
@@ -624,7 +821,8 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
   <!-- ══════════════ SCREEN 1 — WELCOME ══════════════ -->
   <div class="screen" id="s1">
     <div class="s-body">
-      <div class="hero" style="text-align:center;padding:32px 0 24px">
+      <div id="s1-greeting"></div>
+      <div class="hero" style="text-align:center;padding:24px 0 20px">
         <span class="hero-icon" style="font-size:3.5rem;display:block;margin-bottom:14px">🚗</span>
         <h1 style="font-size:2rem;font-weight:900;line-height:1.2">Welcome to<br><span style="color:var(--primary)">AutoCare AI</span></h1>
         <p style="color:var(--dim);font-size:0.95rem;margin-top:10px;line-height:1.6">Get your car repaired by certified specialists near you — fast, reliable, free tow included.</p>
@@ -742,8 +940,8 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
           <input class="inp" id="state" type="text" placeholder="CA" maxlength="2" autocomplete="address-level1">
         </div>
         <div class="field">
-          <label>ZIP Code</label>
-          <input class="inp" id="zip" type="text" placeholder="94105" maxlength="6" inputmode="numeric">
+          <label>ZIP / Postal Code</label>
+          <input class="inp" id="zip" type="text" placeholder="94105 or A1A 1A1" maxlength="10" autocomplete="postal-code">
         </div>
       </div>
       <div class="loc-status hidden" id="loc-status"></div>
@@ -888,6 +1086,18 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
         <button class="btn-secondary" onclick="shareBooking()">📤 Share Booking Details</button>
         <button class="btn-secondary" onclick="go(1)" style="margin-top:8px">🚗 Book Another Service</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN MY SERVICES ══════════════ -->
+  <div class="screen" id="s-services">
+    <div class="s-header">
+      <button class="back-btn" onclick="navTo('home')">←</button>
+      <div class="s-title">My Services</div>
+      <button onclick="signOut()" style="color:var(--red);font-size:0.78rem;font-weight:700;padding:6px 10px;background:rgba(239,68,68,0.08);border-radius:var(--r);border:1px solid rgba(239,68,68,0.2)">Sign Out</button>
+    </div>
+    <div class="s-body" id="services-body">
+      <!-- filled by JS -->
     </div>
   </div>
 
@@ -1051,8 +1261,16 @@ window.addEventListener('load', () => {
     }, 10000);
   }
 
-  // Auto-advance splash
-  setTimeout(() => go(1), 2400);
+  // Auto-advance splash — go to auth if not logged in, else welcome
+  setTimeout(() => {
+    const user = getUser();
+    if (user) {
+      showBottomNav();
+      go(1);
+    } else {
+      go('auth');
+    }
+  }, 2400);
 });
 
 function showInstallBanner() {
@@ -1424,14 +1642,259 @@ function confirmBooking() {
     towEl.innerHTML = '';
   }
 
-  // Save to localStorage
+  // Save to localStorage under user account
   try {
-    const bookings = JSON.parse(localStorage.getItem('ac_bookings') || '[]');
-    bookings.push({ id: S.bookingId, shop: sh.name, date: dateStr, time: S.time, damage: dmg.label });
-    localStorage.setItem('ac_bookings', JSON.stringify(bookings));
+    const user = getUser();
+    const key = user ? 'ac_bookings_' + user.email : 'ac_bookings_guest';
+    const bookings = JSON.parse(localStorage.getItem(key) || '[]');
+    bookings.unshift({
+      id: S.bookingId,
+      shopId: sh.id,
+      shop: sh.name,
+      shopAddr: sh.address,
+      shopPhone: sh.phone,
+      date: dateStr,
+      rawDate: date,
+      time: S.time,
+      damage: dmg.label,
+      damageIcon: dmg.icon,
+      severity: dmg.severity,
+      cost: sh.cost,
+      tow: !S.drivable,
+      vehicle: document.getElementById('veh-info').value.trim() || '',
+      assoc: sh.assoc.name,
+      status: 'scheduled',
+      createdAt: new Date().toISOString(),
+    });
+    localStorage.setItem(key, JSON.stringify(bookings));
   } catch(e) {}
 
   go(7);
+}
+
+/* =====================================================================
+   AUTH HELPERS
+===================================================================== */
+function getUser() {
+  try { return JSON.parse(localStorage.getItem('ac_user') || 'null'); } catch(e) { return null; }
+}
+function saveUser(u) {
+  localStorage.setItem('ac_user', JSON.stringify(u));
+}
+function getAccounts() {
+  try { return JSON.parse(localStorage.getItem('ac_accounts') || '{}'); } catch(e) { return {}; }
+}
+function saveAccounts(a) {
+  localStorage.setItem('ac_accounts', JSON.stringify(a));
+}
+
+/* =====================================================================
+   AUTH SCREENS
+===================================================================== */
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-reg').classList.toggle('active', !isLogin);
+  document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+  document.getElementById('form-reg').classList.toggle('hidden', isLogin);
+  const btn = document.getElementById('auth-btn');
+  btn.innerHTML = isLogin ? 'Sign In <span class="btn-arrow">→</span>' : 'Create Account <span class="btn-arrow">→</span>';
+}
+
+function doAuth() {
+  const isLogin = !document.getElementById('form-login').classList.contains('hidden');
+  if (isLogin) doLogin(); else doRegister();
+}
+
+function doLogin() {
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('li-pass').value;
+  const err   = document.getElementById('li-err');
+  err.classList.add('hidden');
+
+  if (!email || !pass) { showErr(err, 'Please enter your email and password.'); return; }
+
+  const accounts = getAccounts();
+  const acc = accounts[email];
+  if (!acc) { showErr(err, 'No account found with that email. Please register first.'); return; }
+  if (acc.password !== btoa(pass)) { showErr(err, 'Incorrect password. Please try again.'); return; }
+
+  saveUser({ name: acc.name, email, phone: acc.phone, since: acc.since });
+  afterLogin();
+}
+
+function doRegister() {
+  const name  = document.getElementById('rg-name').value.trim();
+  const email = document.getElementById('rg-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('rg-pass').value;
+  const phone = document.getElementById('rg-phone').value.trim();
+  const err   = document.getElementById('rg-err');
+  err.classList.add('hidden');
+
+  if (!name)  { showErr(err, 'Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { showErr(err, 'Please enter a valid email address.'); return; }
+  if (pass.length < 6) { showErr(err, 'Password must be at least 6 characters.'); return; }
+
+  const accounts = getAccounts();
+  if (accounts[email]) { showErr(err, 'An account already exists with this email. Please sign in.'); return; }
+
+  accounts[email] = { name, password: btoa(pass), phone, since: new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'}) };
+  saveAccounts(accounts);
+  saveUser({ name, email, phone, since: accounts[email].since });
+  afterLogin();
+}
+
+function showErr(el, msg) {
+  el.textContent = '⚠ ' + msg;
+  el.classList.remove('hidden');
+}
+
+function forgotPwd() {
+  alert('Password reset: In a live app this would send a reset email.\n\nFor now, create a new account with a different email or clear site data to reset.');
+}
+
+function continueGuest() {
+  saveUser({ name: 'Guest', email: null, phone: '', since: 'Today', guest: true });
+  afterLogin();
+}
+
+function afterLogin() {
+  showBottomNav();
+  renderGreeting();
+  go(1);
+}
+
+function signOut() {
+  localStorage.removeItem('ac_user');
+  hideBottomNav();
+  // Reset screens
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active','leaving');
+  });
+  document.getElementById('s0').classList.add('active');
+  S.screen = 0;
+  S.photos = []; S.damage = null; S.shopId = null;
+  setTimeout(() => go('auth'), 100);
+}
+
+/* =====================================================================
+   BOTTOM NAV & GREETING
+===================================================================== */
+function showBottomNav() {
+  document.getElementById('bottom-nav').classList.remove('hidden');
+  // Add padding class to scrollable screens
+  ['s1','s2','s3','s5','s6','s7','s-services'].forEach(id => {
+    document.getElementById(id)?.classList.add('has-nav');
+  });
+}
+function hideBottomNav() {
+  document.getElementById('bottom-nav').classList.add('hidden');
+  document.querySelectorAll('.has-nav').forEach(el => el.classList.remove('has-nav'));
+}
+
+function navTo(tab) {
+  document.querySelectorAll('.bnav-tab').forEach(b => b.classList.remove('active'));
+  if (tab === 'home') {
+    document.getElementById('bnav-home').classList.add('active');
+    go(1);
+  } else if (tab === 'services' || tab === 'profile') {
+    document.getElementById('bnav-svcs').classList.add('active');
+    renderServices();
+    go('services');
+  }
+}
+
+function renderGreeting() {
+  const user = getUser();
+  if (!user || user.guest) { document.getElementById('s1-greeting').innerHTML = ''; return; }
+  const firstName = user.name.split(' ')[0];
+  document.getElementById('s1-greeting').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px">
+      <div class="avatar-circle" style="width:40px;height:40px;font-size:1rem">${firstName[0]}</div>
+      <div>
+        <div style="font-size:0.92rem;font-weight:700">Hi, ${firstName}! 👋</div>
+        <div style="font-size:0.75rem;color:var(--dim)">Ready to get your car fixed?</div>
+      </div>
+      <button onclick="navTo('services')" style="margin-left:auto;font-size:0.72rem;font-weight:700;color:var(--primary);background:rgba(255,107,53,0.1);padding:6px 10px;border-radius:20px;border:1px solid rgba(255,107,53,0.2)">My Services</button>
+    </div>`;
+}
+
+/* =====================================================================
+   MY SERVICES SCREEN
+===================================================================== */
+function renderServices() {
+  const user = getUser();
+  const body = document.getElementById('services-body');
+  if (!user) { body.innerHTML = ''; return; }
+
+  const key = user.guest ? 'ac_bookings_guest' : 'ac_bookings_' + user.email;
+  const bookings = JSON.parse(localStorage.getItem(key) || '[]');
+
+  // Simulate status progression (older bookings = completed)
+  bookings.forEach((b, i) => {
+    if (b.status === 'scheduled' && i > 0) b.status = 'completed';
+    if (b.status === 'scheduled' && i === 0 && bookings.length > 1) b.status = 'progress';
+  });
+
+  const firstName = user.name.split(' ')[0];
+
+  body.innerHTML = `
+    <div class="profile-strip">
+      <div class="avatar-circle">${user.guest ? '👤' : firstName[0]}</div>
+      <div>
+        <div class="profile-name">${user.name}</div>
+        <div class="profile-email">${user.email || 'Guest Session'}</div>
+        <div class="profile-since">Member since ${user.since}</div>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-val">${bookings.length}</div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${bookings.filter(b=>b.tow).length}</div>
+        <div class="stat-label">Free Tows Used</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val">${bookings.filter(b=>b.status==='completed').length}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+    <div class="svc-head">
+      <h3>Service History</h3>
+      <span>${bookings.length} record${bookings.length !== 1 ? 's' : ''}</span>
+    </div>
+    ${bookings.length === 0
+      ? `<div class="svc-empty"><span class="big">🔧</span>No services yet.<br>Start a damage assessment to book your first repair!</div>`
+      : bookings.map(b => serviceCard(b)).join('')
+    }
+    <button class="btn-primary" style="margin-top:16px" onclick="navTo('home')">
+      + Start New Assessment <span class="btn-arrow">→</span>
+    </button>`;
+}
+
+function serviceCard(b) {
+  const statusClass = { scheduled:'status-scheduled', completed:'status-completed', progress:'status-progress' }[b.status] || 'status-scheduled';
+  const statusLabel = { scheduled:'Scheduled', completed:'Completed', progress:'In Progress' }[b.status] || b.status;
+  return `
+    <div class="svc-card">
+      <div class="svc-card-head">
+        <div class="svc-icon">${b.damageIcon || '🔧'}</div>
+        <div style="flex:1">
+          <div class="svc-shop">${b.shop}</div>
+          <div class="svc-date">📅 ${b.date} at ${b.time}</div>
+          ${b.vehicle ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">🚗 ${b.vehicle}</div>` : ''}
+        </div>
+        <span class="svc-status ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="svc-dmg">
+        <span>${b.damageIcon || '💥'}</span>
+        <span>${b.damage}</span>
+        ${b.tow ? '<span style="margin-left:auto;color:var(--blue);font-size:0.7rem;font-weight:700">🚐 Tow included</span>' : ''}
+      </div>
+      <div class="svc-id">Booking ID: ${b.id} · Est. ${b.cost || 'TBD'}</div>
+    </div>`;
 }
 
 /* =====================================================================
