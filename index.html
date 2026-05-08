@@ -717,6 +717,29 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
 
 /* ===================== SCROLLBAR ===================== */
 ::-webkit-scrollbar{width:0}
+
+/* ===================== VEHICLE CHIPS ===================== */
+.veh-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.veh-chip{padding:8px 12px;border-radius:var(--r);background:var(--surf2);border:1px solid var(--border);color:var(--dim);font-size:0.82rem;font-weight:600;transition:all var(--t)}
+.veh-chip.active{background:rgba(255,107,53,0.1);border-color:var(--primary);color:var(--text)}
+
+/* ===================== VEHICLE MANAGEMENT ===================== */
+.veh-item{display:flex;align-items:center;gap:10px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:8px}
+.veh-item-icon{font-size:1.4rem;flex-shrink:0}
+.veh-item-info{flex:1}
+.veh-item-name{font-size:0.9rem;font-weight:700}
+.veh-item-sub{font-size:0.75rem;color:var(--dim);margin-top:2px}
+.veh-del-btn{color:var(--red);font-size:0.82rem;font-weight:700;padding:5px 9px;background:rgba(239,68,68,0.08);border-radius:8px;border:1px solid rgba(239,68,68,0.15)}
+.veh-add-form{background:var(--surf2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:12px}
+
+/* ===================== PRODUCT CARDS ===================== */
+.product-card{display:flex;align-items:flex-start;gap:12px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px}
+.prod-emoji{font-size:1.6rem;width:40px;text-align:center;flex-shrink:0;padding-top:2px}
+.prod-info{flex:1}
+.prod-name{font-size:0.9rem;font-weight:700}
+.prod-use{font-size:0.68rem;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px}
+.prod-desc{font-size:0.8rem;color:var(--dim);margin-top:5px;line-height:1.4}
+.prod-price{font-size:0.82rem;font-weight:700;color:var(--green);margin-top:6px}
 </style>
 </head>
 <body>
@@ -1055,6 +1078,10 @@ textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
           <label>Phone Number</label>
           <input class="inp" id="cust-phone" type="tel" placeholder="+1 (555) 000-0000" autocomplete="tel">
         </div>
+        <div id="saved-veh-chips" class="hidden">
+          <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Saved Vehicles</label>
+          <div class="veh-chips" id="veh-chips-list"></div>
+        </div>
         <div class="field">
           <label>Vehicle (Year, Make, Model, Color)</label>
           <input class="inp" id="veh-info" type="text" placeholder="2021 Toyota Camry, White">
@@ -1197,6 +1224,20 @@ const SHOPS = [
     badge:'Full Service', badgeColor:'var(--green)',
     assoc:{ name:'Linda Park', title:'Customer Service Manager', phone:'(555) 678-9013', eta:'50–65 min' },
   },
+];
+
+const PRODUCTS = [
+  { emoji:'✨', name:'Car Wax & Paint Sealer', use:'Paint protection', price:'$12–$25', desc:'Shields paint from UV, water, and minor scratches — extends paint life significantly.', tags:['paint','scratch','panel'] },
+  { emoji:'💧', name:'Rain-X Windshield Treatment', use:'Visibility & glass care', price:'$8–$15', desc:'Repels water from glass, dramatically improving wet-weather visibility.', tags:['glass','windshield','window'] },
+  { emoji:'🖊️', name:'Touch-Up Paint Pen', use:'Scratch concealment', price:'$10–$20', desc:'Color-matched paint to cover minor scratches before they rust through.', tags:['paint','scratch'] },
+  { emoji:'🧪', name:'Scratch Remover Compound', use:'Paint restoration', price:'$10–$18', desc:'Removes fine scratches, swirl marks and oxidation from paint surface.', tags:['paint','scratch','panel'] },
+  { emoji:'🛡️', name:'Bumper & Trim Restorer', use:'Bumper care', price:'$8–$20', desc:'Revives faded plastic bumpers and trim to a rich, like-new finish.', tags:['bumper','collision'] },
+  { emoji:'🔧', name:'Dent Puller Kit', use:'Minor dent removal', price:'$15–$40', desc:'DIY suction + bridge puller for small dents without damaging the paint.', tags:['dent','door','panel'] },
+  { emoji:'🛢️', name:'Full Synthetic Engine Oil', use:'Engine longevity', price:'$25–$45', desc:'Reduces engine wear and keeps all moving parts lubricated between visits.', tags:['general','collision','frame'] },
+  { emoji:'🔵', name:'Portable Tire Inflator', use:'Tire safety', price:'$20–$40', desc:'Compact 12V inflator — inflate a flat anywhere, anytime.', tags:['general','frame','collision'] },
+  { emoji:'🛑', name:'Brake Cleaner Spray', use:'Brake maintenance', price:'$6–$12', desc:'Removes dust and grease from brake components for optimal stopping power.', tags:['general','collision'] },
+  { emoji:'🧹', name:'Interior Detailing Kit', use:'Interior care', price:'$18–$35', desc:'Complete kit for dashboard, upholstery, and carpet — keeps the cabin fresh.', tags:['general'] },
+  { emoji:'🚗', name:'Windshield Repair Kit', use:'DIY glass repair', price:'$12–$22', desc:'Fixes small chips and cracks before they spread — avoids full replacement cost.', tags:['glass','windshield','window'] },
 ];
 
 /* =====================================================================
@@ -1529,6 +1570,7 @@ function selectShop(id) {
       </div>
     </div>`;
   go(6);
+  prefillBookingForm();
 }
 
 function setDrivable(val) {
@@ -1578,10 +1620,17 @@ function confirmBooking() {
       <div class="conf-row">
         <span class="conf-row-icon">📍</span>
         <div>
-          <div class="conf-row-label">Address</div>
+          <div class="conf-row-label">Shop Address</div>
           <div class="conf-row-val">${sh.address}</div>
         </div>
       </div>
+      ${S.location ? `<div class="conf-row">
+        <span class="conf-row-icon">🗺️</span>
+        <div>
+          <div class="conf-row-label">Service Location</div>
+          <div class="conf-row-val">${S.location.label}</div>
+        </div>
+      </div>` : ''}
       <div class="conf-row">
         <span class="conf-row-icon">💥</span>
         <div>
@@ -1661,6 +1710,7 @@ function confirmBooking() {
       severity: dmg.severity,
       cost: sh.cost,
       tow: !S.drivable,
+      location: S.location ? S.location.label : '',
       vehicle: document.getElementById('veh-info').value.trim() || '',
       assoc: sh.assoc.name,
       status: 'scheduled',
@@ -1797,8 +1847,12 @@ function navTo(tab) {
   if (tab === 'home') {
     document.getElementById('bnav-home').classList.add('active');
     go(1);
-  } else if (tab === 'services' || tab === 'profile') {
+  } else if (tab === 'services') {
     document.getElementById('bnav-svcs').classList.add('active');
+    renderServices();
+    go('services');
+  } else if (tab === 'profile') {
+    document.getElementById('bnav-prof').classList.add('active');
     renderServices();
     go('services');
   }
@@ -1808,12 +1862,16 @@ function renderGreeting() {
   const user = getUser();
   if (!user || user.guest) { document.getElementById('s1-greeting').innerHTML = ''; return; }
   const firstName = user.name.split(' ')[0];
+  const vehicles = getVehicles();
+  const vehNote = vehicles.length > 0
+    ? `🚗 ${vehicles[0].year} ${vehicles[0].make} ${vehicles[0].model}`
+    : 'Ready to get your car fixed?';
   document.getElementById('s1-greeting').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;padding:14px;background:var(--surf);border:1px solid var(--border);border-radius:var(--r);margin-bottom:4px">
       <div class="avatar-circle" style="width:40px;height:40px;font-size:1rem">${firstName[0]}</div>
       <div>
         <div style="font-size:0.92rem;font-weight:700">Hi, ${firstName}! 👋</div>
-        <div style="font-size:0.75rem;color:var(--dim)">Ready to get your car fixed?</div>
+        <div style="font-size:0.75rem;color:var(--dim)">${vehNote}</div>
       </div>
       <button onclick="navTo('services')" style="margin-left:auto;font-size:0.72rem;font-weight:700;color:var(--primary);background:rgba(255,107,53,0.1);padding:6px 10px;border-radius:20px;border:1px solid rgba(255,107,53,0.2)">My Services</button>
     </div>`;
@@ -1838,15 +1896,23 @@ function renderServices() {
 
   const firstName = user.name.split(' ')[0];
 
+  // Collect damage specs from history for personalised product suggestions
+  const allSpecs = bookings.flatMap(b => {
+    const dmg = DAMAGE_TYPES.find(d => d.label === b.damage);
+    return dmg ? dmg.specs : [];
+  });
+  const historySpecs = [...new Set(allSpecs)];
+
   body.innerHTML = `
     <div class="profile-strip">
       <div class="avatar-circle">${user.guest ? '👤' : firstName[0]}</div>
-      <div>
+      <div style="flex:1">
         <div class="profile-name">${user.name}</div>
         <div class="profile-email">${user.email || 'Guest Session'}</div>
         <div class="profile-since">Member since ${user.since}</div>
       </div>
     </div>
+    ${user.guest ? '' : renderVehicleManager()}
     <div class="stats-row">
       <div class="stat-box">
         <div class="stat-val">${bookings.length}</div>
@@ -1869,7 +1935,8 @@ function renderServices() {
       ? `<div class="svc-empty"><span class="big">🔧</span>No services yet.<br>Start a damage assessment to book your first repair!</div>`
       : bookings.map(b => serviceCard(b)).join('')
     }
-    <button class="btn-primary" style="margin-top:16px" onclick="navTo('home')">
+    ${renderProductSuggestions(historySpecs)}
+    <button class="btn-primary" style="margin-top:8px" onclick="navTo('home')">
       + Start New Assessment <span class="btn-arrow">→</span>
     </button>`;
 }
@@ -1885,6 +1952,7 @@ function serviceCard(b) {
           <div class="svc-shop">${b.shop}</div>
           <div class="svc-date">📅 ${b.date} at ${b.time}</div>
           ${b.vehicle ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">🚗 ${b.vehicle}</div>` : ''}
+          ${b.location ? `<div style="font-size:0.72rem;color:var(--muted);margin-top:2px">📍 ${b.location}</div>` : ''}
         </div>
         <span class="svc-status ${statusClass}">${statusLabel}</span>
       </div>
@@ -1895,6 +1963,159 @@ function serviceCard(b) {
       </div>
       <div class="svc-id">Booking ID: ${b.id} · Est. ${b.cost || 'TBD'}</div>
     </div>`;
+}
+
+/* =====================================================================
+   VEHICLE MANAGEMENT
+===================================================================== */
+function getVehicles() {
+  const user = getUser();
+  if (!user || user.guest) return [];
+  try { return JSON.parse(localStorage.getItem('ac_vehicles_' + user.email) || '[]'); } catch(e) { return []; }
+}
+function saveVehicles(list) {
+  const user = getUser();
+  if (!user || user.guest) return;
+  localStorage.setItem('ac_vehicles_' + user.email, JSON.stringify(list));
+}
+
+function renderVehicleManager() {
+  const vehicles = getVehicles();
+  return `
+    <div style="margin-bottom:22px">
+      <div class="svc-head">
+        <h3>🚗 My Vehicles</h3>
+        <button onclick="toggleAddVehicle()" style="font-size:0.78rem;font-weight:700;color:var(--primary);background:rgba(255,107,53,0.1);padding:5px 10px;border-radius:20px;border:1px solid rgba(255,107,53,0.2)">+ Add Vehicle</button>
+      </div>
+      <div id="add-veh-form" class="veh-add-form hidden">
+        <div class="row2">
+          <div class="field"><label>Year</label><input class="inp" id="nv-year" type="text" placeholder="2021" maxlength="4"></div>
+          <div class="field"><label>Make</label><input class="inp" id="nv-make" type="text" placeholder="Toyota"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Model</label><input class="inp" id="nv-model" type="text" placeholder="Camry"></div>
+          <div class="field"><label>Color</label><input class="inp" id="nv-color" type="text" placeholder="White"></div>
+        </div>
+        <div class="field"><label>License Plate (optional)</label><input class="inp" id="nv-plate" type="text" placeholder="ABC-1234" maxlength="10"></div>
+        <button class="btn-primary" style="padding:12px;margin-top:4px" onclick="saveNewVehicle()">Save Vehicle ✓</button>
+      </div>
+      ${vehicles.length === 0
+        ? `<div style="text-align:center;padding:16px;color:var(--muted);font-size:0.85rem;background:var(--surf);border-radius:var(--r);border:1px dashed var(--border)">No vehicles saved yet.<br>Add your car for faster booking!</div>`
+        : vehicles.map((v, i) => vehicleItemHTML(v, i)).join('')
+      }
+    </div>`;
+}
+
+function vehicleItemHTML(v, i) {
+  return `
+    <div class="veh-item">
+      <span class="veh-item-icon">🚗</span>
+      <div class="veh-item-info">
+        <div class="veh-item-name">${v.year} ${v.make} ${v.model}</div>
+        <div class="veh-item-sub">${[v.color, v.plate].filter(Boolean).join(' · ') || 'No additional details'}</div>
+      </div>
+      <button class="veh-del-btn" onclick="deleteVehicle(${i})">Remove</button>
+    </div>`;
+}
+
+function toggleAddVehicle() {
+  const form = document.getElementById('add-veh-form');
+  if (form) form.classList.toggle('hidden');
+}
+
+function saveNewVehicle() {
+  const year  = (document.getElementById('nv-year')?.value  || '').trim();
+  const make  = (document.getElementById('nv-make')?.value  || '').trim();
+  const model = (document.getElementById('nv-model')?.value || '').trim();
+  const color = (document.getElementById('nv-color')?.value || '').trim();
+  const plate = (document.getElementById('nv-plate')?.value || '').trim();
+  if (!year || !make || !model) { alert('Please enter Year, Make, and Model.'); return; }
+  const vehicles = getVehicles();
+  vehicles.push({ year, make, model, color, plate });
+  saveVehicles(vehicles);
+  renderServices();
+}
+
+function deleteVehicle(i) {
+  const vehicles = getVehicles();
+  vehicles.splice(i, 1);
+  saveVehicles(vehicles);
+  renderServices();
+}
+
+/* =====================================================================
+   PRODUCT SUGGESTIONS
+===================================================================== */
+function renderProductSuggestions(historySpecs) {
+  let picks = historySpecs.length > 0
+    ? PRODUCTS.filter(p => p.tags.some(t => historySpecs.includes(t)))
+    : [];
+  const generals = PRODUCTS.filter(p => p.tags.includes('general') && !picks.find(r => r.name === p.name));
+  picks = [...picks, ...generals].slice(0, 5);
+  const tailored = historySpecs.length > 0 ? ' — based on your service history' : '';
+  return `
+    <div style="margin-bottom:16px">
+      <div class="svc-head" style="margin-top:4px">
+        <h3>💡 Maintenance Tips</h3>
+      </div>
+      <p style="font-size:0.8rem;color:var(--dim);margin-bottom:12px">Low-cost products to keep your car in top condition${tailored}</p>
+      ${picks.map(p => `
+        <div class="product-card">
+          <div class="prod-emoji">${p.emoji}</div>
+          <div class="prod-info">
+            <div class="prod-name">${p.name}</div>
+            <div class="prod-use">${p.use}</div>
+            <div class="prod-desc">${p.desc}</div>
+            <div class="prod-price">${p.price} avg.</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+/* =====================================================================
+   BOOKING FORM — AUTO-FILL & VEHICLE CHIPS
+===================================================================== */
+function prefillBookingForm() {
+  const user = getUser();
+  if (!user || user.guest) return;
+  const nameEl  = document.getElementById('cust-name');
+  const phoneEl = document.getElementById('cust-phone');
+  if (nameEl  && !nameEl.value)  nameEl.value  = user.name  || '';
+  if (phoneEl && !phoneEl.value) phoneEl.value = user.phone || '';
+  renderVehicleChips();
+}
+
+function renderVehicleChips() {
+  const vehicles = getVehicles();
+  const wrap = document.getElementById('saved-veh-chips');
+  const list = document.getElementById('veh-chips-list');
+  if (!wrap || !list) return;
+  if (vehicles.length === 0) { wrap.classList.add('hidden'); return; }
+  wrap.classList.remove('hidden');
+  list.innerHTML = vehicles.map((v, i) =>
+    `<button class="veh-chip" onclick="pickVehicle(${i},this)">🚗 ${v.year} ${v.make} ${v.model}</button>`
+  ).join('') + `<button class="veh-chip" onclick="clearVehicleChip(this)">+ Other</button>`;
+  // Auto-select first saved vehicle
+  const vehEl = document.getElementById('veh-info');
+  if (vehEl && !vehEl.value && vehicles.length > 0) {
+    const v = vehicles[0];
+    vehEl.value = `${v.year} ${v.make} ${v.model}${v.color ? ', ' + v.color : ''}`;
+    setTimeout(() => list.querySelector('.veh-chip')?.classList.add('active'), 50);
+  }
+}
+
+function pickVehicle(i, btn) {
+  const v = getVehicles()[i];
+  if (!v) return;
+  document.getElementById('veh-info').value = `${v.year} ${v.make} ${v.model}${v.color ? ', ' + v.color : ''}`;
+  document.querySelectorAll('.veh-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function clearVehicleChip(btn) {
+  document.getElementById('veh-info').value = '';
+  document.querySelectorAll('.veh-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 /* =====================================================================
