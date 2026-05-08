@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="description" content="AutoCare AI — Smart car damage assessment & repair shop finder with free tow service">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AutoCare AI">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<title>AutoCare AI</title>
+<style>
+/* ===================== VARIABLES ===================== */
+:root {
+  --bg:       #0a0f1e;
+  --bg2:      #0d1424;
+  --surf:     #131929;
+  --surf2:    #1a2234;
+  --surf3:    #1e2840;
+  --border:   rgba(255,255,255,0.07);
+  --primary:  #ff6b35;
+  --primary2: #ff8c5a;
+  --glow:     rgba(255,107,53,0.25);
+  --blue:     #3b82f6;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --amber:    #f59e0b;
+  --purple:   #8b5cf6;
+  --cyan:     #06b6d4;
+  --text:     #e2e8f0;
+  --dim:      #94a3b8;
+  --muted:    #475569;
+  --r:        14px;
+  --r2:       20px;
+  --r3:       28px;
+  --shadow:   0 8px 40px rgba(0,0,0,0.6);
+  --t:        0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ===================== RESET ===================== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:var(--bg);color:var(--text);
+  height:100%;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--primary);text-decoration:none}
+button{cursor:pointer;border:none;outline:none;font-family:inherit;background:none}
+input,textarea{font-family:inherit;font-size:1rem}
+ul{list-style:none}
+img{max-width:100%}
+
+/* ===================== APP SHELL ===================== */
+#app{position:fixed;inset:0;overflow:hidden}
+
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;transform:translateX(105%);
+  transition:opacity var(--t),transform var(--t);
+  pointer-events:none;
+  overflow-y:auto;overflow-x:hidden;
+  background:var(--bg);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.screen.active{opacity:1;transform:translateX(0);pointer-events:all}
+.screen.leaving{opacity:0;transform:translateX(-30%)}
+
+/* ===================== INSTALL BANNER ===================== */
+#install-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:linear-gradient(135deg,#1a2234,#0d1424);
+  border-top:1px solid var(--border);
+  padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:12px;
+  box-shadow:0 -4px 30px rgba(0,0,0,0.5);
+  transition:transform var(--t);
+}
+#install-banner.hidden{transform:translateY(110%)}
+.install-icon{font-size:2rem;flex-shrink:0}
+.install-text{flex:1}
+.install-text strong{display:block;font-size:0.95rem;color:var(--text)}
+.install-text span{font-size:0.8rem;color:var(--dim)}
+.btn-install{
+  background:var(--primary);color:#fff;
+  padding:8px 16px;border-radius:var(--r);
+  font-size:0.85rem;font-weight:700;white-space:nowrap;
+}
+.btn-x{color:var(--dim);padding:4px 8px;font-size:1.2rem}
+
+/* iOS install hint */
+#ios-hint{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:linear-gradient(135deg,#1a2234,#0d1424);
+  border-top:1px solid var(--border);
+  padding:16px;text-align:center;
+  transition:transform var(--t);
+}
+#ios-hint.hidden{transform:translateY(110%)}
+#ios-hint p{font-size:0.88rem;color:var(--dim);line-height:1.6}
+#ios-hint strong{color:var(--text)}
+#ios-hint .arrow{font-size:1.6rem;display:block;margin-top:4px}
+
+/* ===================== SCREEN HEADER ===================== */
+.s-header{
+  display:flex;align-items:center;
+  padding:16px 20px 0;
+  padding-top:calc(16px + env(safe-area-inset-top));
+  gap:12px;flex-shrink:0;
+}
+.back-btn{
+  color:var(--dim);font-size:1rem;
+  padding:8px;border-radius:50%;
+  background:var(--surf);
+  width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+}
+.s-title{font-size:1.05rem;font-weight:700;color:var(--text)}
+
+/* Progress dots */
+.progress{
+  display:flex;align-items:center;gap:6px;
+  margin-left:auto;
+}
+.p-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--surf3);transition:all var(--t);
+}
+.p-dot.done{background:var(--green)}
+.p-dot.active{background:var(--primary);width:20px;border-radius:4px}
+
+/* ===================== SCROLL CONTENT ===================== */
+.s-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:20px;
+  -webkit-overflow-scrolling:touch;
+}
+.s-body::-webkit-scrollbar{display:none}
+
+.s-footer{
+  padding:16px 20px calc(16px + env(safe-area-inset-bottom));
+  flex-shrink:0;
+  background:linear-gradient(to top, var(--bg) 80%, transparent);
+}
+
+/* ===================== BUTTONS ===================== */
+.btn-primary{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:16px;border-radius:var(--r2);
+  background:linear-gradient(135deg,var(--primary),#e85a20);
+  color:#fff;font-size:1.05rem;font-weight:700;
+  box-shadow:0 4px 20px var(--glow);
+  transition:all 0.2s;letter-spacing:0.3px;
+}
+.btn-primary:active{transform:scale(0.97)}
+.btn-primary:disabled{opacity:0.4;pointer-events:none}
+.btn-primary.green{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 20px rgba(16,185,129,0.3)}
+.btn-secondary{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:14px;border-radius:var(--r2);
+  background:var(--surf2);color:var(--dim);
+  font-size:0.95rem;font-weight:600;border:1px solid var(--border);
+  transition:all 0.2s;margin-top:10px;
+}
+.btn-secondary:active{transform:scale(0.97)}
+.btn-arrow{
+  background:rgba(255,255,255,0.15);
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;margin-left:auto;
+}
+
+/* ===================== INPUTS ===================== */
+.field{margin-bottom:14px}
+.field label{
+  display:block;font-size:0.8rem;font-weight:600;
+  color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;
+  margin-bottom:6px;
+}
+.inp{
+  width:100%;padding:13px 14px;
+  background:var(--surf2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-size:0.95rem;
+  transition:border-color var(--t);
+  -webkit-appearance:none;
+}
+.inp:focus{outline:none;border-color:var(--primary)}
+.inp::placeholder{color:var(--muted)}
+textarea.inp{resize:vertical;min-height:90px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ===================== CARD ===================== */
+.card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r2);padding:18px;
+  box-shadow:var(--shadow);
+}
+
+/* ===================== SPLASH SCREEN ===================== */
+#s0{background:linear-gradient(160deg,#0a0f1e 0%,#0d1830 100%)}
+.splash-wrap{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 20px;
+  padding-top:calc(40px + env(safe-area-inset-top));
+}
+.splash-logo{width:110px;height:110px;margin-bottom:28px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.splash-title{font-size:2.6rem;font-weight:900;letter-spacing:-1px;line-height:1}
+.splash-title span{color:var(--primary)}
+.splash-sub{color:var(--dim);font-size:1rem;margin-top:10px;text-align:center;line-height:1.5}
+.splash-loader{
+  width:160px;height:3px;background:var(--surf2);
+  border-radius:2px;margin-top:50px;overflow:hidden;
+}
+.splash-fill{
+  height:100%;background:var(--primary);border-radius:2px;
+  animation:load 2s ease-in-out forwards;
+}
+@keyframes load{from{width:0}to{width:100%}}
+
+/* ===================== WELCOME ===================== */
+#s1 .hero{text-align:center;padding:40px 0 28px}
+#s1 .hero-icon{font-size:4rem;display:block;margin-bottom:16px}
+#s1 h1{font-size:2rem;font-weight:900;line-height:1.2}
+#s1 h1 span{color:var(--primary)}
+#s1 .tagline{color:var(--dim);font-size:1rem;margin-top:10px;line-height:1.5}
+
+.features{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.feat{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px;
+}
+.feat-icon{
+  font-size:1.6rem;width:44px;height:44px;
+  background:var(--surf2);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.feat-text strong{display:block;font-size:0.95rem;font-weight:700;color:var(--text)}
+.feat-text span{font-size:0.82rem;color:var(--dim);line-height:1.4}
+
+.terms{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:10px}
+
+/* ===================== PHOTO UPLOAD ===================== */
+.step-head{margin-bottom:20px}
+.step-head h2{font-size:1.5rem;font-weight:800}
+.step-head p{color:var(--dim);font-size:0.9rem;margin-top:6px;line-height:1.5}
+
+.upload-zone{
+  border:2px dashed rgba(255,107,53,0.4);
+  border-radius:var(--r2);padding:32px 20px;
+  text-align:center;background:rgba(255,107,53,0.04);
+  cursor:pointer;transition:all 0.2s;margin-bottom:16px;
+}
+.upload-zone:active,.upload-zone.drag{
+  border-color:var(--primary);background:rgba(255,107,53,0.08);
+}
+.upload-zone .uz-icon{font-size:3rem;display:block;margin-bottom:10px}
+.upload-zone .uz-text{font-weight:700;font-size:1rem;color:var(--text)}
+.upload-zone .uz-hint{font-size:0.78rem;color:var(--dim);margin-top:4px}
+
+.photos-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:8px;margin-bottom:16px;
+}
+.photo-thumb{
+  aspect-ratio:1;border-radius:var(--r);overflow:hidden;
+  position:relative;background:var(--surf);
+}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-del{
+  position:absolute;top:4px;right:4px;
+  background:rgba(0,0,0,0.7);color:#fff;
+  width:22px;height:22px;border-radius:50%;
+  font-size:0.7rem;display:flex;align-items:center;justify-content:center;
+}
+
+.tips{background:var(--surf2);border-radius:var(--r);padding:14px;border-left:3px solid var(--primary)}
+.tips h4{font-size:0.85rem;font-weight:700;margin-bottom:8px;color:var(--primary)}
+.tips li{font-size:0.8rem;color:var(--dim);padding:3px 0;padding-left:14px;position:relative;line-height:1.4}
+.tips li::before{content:"•";position:absolute;left:0;color:var(--primary)}
+
+.photo-hint{font-size:0.8rem;color:var(--dim);text-align:center;margin-top:8px}
+
+/* ===================== LOCATION ===================== */
+.loc-hero{text-align:center;padding:24px 0 20px}
+.loc-hero .loc-icon{font-size:4rem;display:block;margin-bottom:14px}
+.loc-btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:15px;border-radius:var(--r2);
+  background:linear-gradient(135deg,var(--blue),#2563eb);
+  color:#fff;font-size:1rem;font-weight:700;
+  box-shadow:0 4px 20px rgba(59,130,246,0.3);
+  transition:all 0.2s;margin-bottom:20px;
+}
+.loc-btn:active{transform:scale(0.97)}
+.divider{
+  display:flex;align-items:center;gap:12px;
+  color:var(--muted);font-size:0.8rem;margin-bottom:20px;
+}
+.divider::before,.divider::after{
+  content:"";flex:1;height:1px;background:var(--border);
+}
+.loc-status{
+  display:flex;align-items:center;gap:10px;
+  padding:12px;border-radius:var(--r);
+  font-size:0.88rem;margin-top:14px;
+}
+.loc-status.ok{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green)}
+.loc-status.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red)}
+.loc-status.hidden{display:none}
+
+/* ===================== ANALYSIS ===================== */
+#s4{
+  background:radial-gradient(ellipse at center, #0d1830 0%, var(--bg) 70%);
+  align-items:center;justify-content:center;padding:40px 24px;
+}
+.scan-wrap{position:relative;width:160px;height:160px;margin-bottom:36px}
+.scan-ring{
+  position:absolute;border-radius:50%;
+  border:2px solid var(--primary);opacity:0;
+  animation:ring 2.4s ease-out infinite;
+}
+.r1{width:100%;height:100%;top:0;left:0;animation-delay:0s}
+.r2{width:76%;height:76%;top:12%;left:12%;animation-delay:0.6s}
+.r3{width:52%;height:52%;top:24%;left:24%;animation-delay:1.2s}
+@keyframes ring{
+  0%{opacity:0.7;transform:scale(0.6)}
+  100%{opacity:0;transform:scale(1.1)}
+}
+.scan-core{
+  position:absolute;inset:32%;border-radius:50%;
+  background:var(--primary);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;
+  box-shadow:0 0 30px var(--glow);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.analysis-title{font-size:1.5rem;font-weight:800;text-align:center;margin-bottom:28px}
+.a-steps{display:flex;flex-direction:column;gap:14px;width:100%;max-width:320px}
+.a-step{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:var(--r);
+  background:var(--surf);border:1px solid var(--border);
+  font-size:0.9rem;color:var(--dim);transition:all var(--t);
+}
+.a-step.done{border-color:rgba(16,185,129,0.3);color:var(--text)}
+.a-step.active{border-color:rgba(255,107,53,0.4);color:var(--text)}
+.step-dot{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--surf2);border:2px solid var(--border);
+  flex-shrink:0;transition:all var(--t);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;
+}
+.a-step.done .step-dot{background:var(--green);border-color:var(--green)}
+.a-step.active .step-dot{
+  border-color:var(--primary);
+  animation:spin-dot 1s linear infinite;
+}
+@keyframes spin-dot{to{transform:rotate(360deg)}}
+
+/* ===================== RESULTS ===================== */
+.dmg-card{
+  background:linear-gradient(135deg,var(--surf),var(--surf2));
+  border:1px solid var(--border);border-radius:var(--r2);
+  padding:18px;margin-bottom:20px;position:relative;overflow:hidden;
+}
+.dmg-card::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--primary),var(--amber));
+}
+.dmg-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.dmg-icon{font-size:2.2rem}
+.dmg-type{font-size:1.15rem;font-weight:800}
+.severity-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  font-size:0.75rem;font-weight:700;margin-top:4px;
+}
+.dmg-desc{font-size:0.85rem;color:var(--dim);line-height:1.6;margin-bottom:14px}
+.confidence-wrap{display:flex;align-items:center;gap:10px}
+.conf-label{font-size:0.78rem;color:var(--dim);white-space:nowrap}
+.conf-bar{flex:1;height:6px;background:var(--surf3);border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--amber))}
+.conf-val{font-size:0.8rem;font-weight:700;color:var(--primary);white-space:nowrap}
+
+.shops-head{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.shops-head h3{font-size:1.1rem;font-weight:800}
+.shops-count{font-size:0.8rem;color:var(--dim)}
+.shops-sub{font-size:0.82rem;color:var(--dim);margin-bottom:14px}
+.shops-list{display:flex;flex-direction:column;gap:12px}
+
+.shop-card{
+  background:var(--surf);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;
+  transition:border-color var(--t);cursor:pointer;
+}
+.shop-card:active{transform:scale(0.99)}
+.shop-card.selected{border-color:var(--primary)}
+.shop-top{
+  padding:16px;display:flex;align-items:flex-start;gap:12px;
+  border-bottom:1px solid var(--border);
+}
+.shop-num{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#e85a20);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:0.9rem;color:#fff;flex-shrink:0;
+}
+.shop-info{flex:1}
+.shop-name{font-size:1rem;font-weight:700}
+.shop-rating{display:flex;align-items:center;gap:5px;margin-top:3px}
+.stars{color:#f59e0b;font-size:0.85rem}
+.reviews{font-size:0.75rem;color:var(--dim)}
+.shop-badge{
+  padding:3px 8px;border-radius:20px;
+  font-size:0.7rem;font-weight:700;
+  background:rgba(255,107,53,0.15);color:var(--primary);
+  white-space:nowrap;
+}
+.shop-meta{
+  padding:12px 16px;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:8px;border-bottom:1px solid var(--border);
+}
+.meta-item{display:flex;flex-direction:column;gap:2px}
+.meta-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted)}
+.meta-val{font-size:0.85rem;font-weight:600;color:var(--text)}
+.meta-val.green{color:var(--green)}
+.shop-certs{
+  padding:10px 16px;
+  display:flex;flex-wrap:wrap;gap:6px;
+}
+.cert-tag{
+  padding:3px 8px;border-radius:20px;
+  font-size:0.7rem;background:var(--surf2);color:var(--dim);
+  border:1px solid var(--border);
+}
+.shop-actions{padding:12px 16px;display:flex;gap:8px}
+.btn-select{
+  flex:1;padding:12px;border-radius:var(--r);
+  background:linear-gradient(135deg,var(--primary),#e85a20);
+  color:#fff;font-size:0.9rem;font-weight:700;
+}
+.btn-call{
+  padding:12px 14px;border-radius:var(--r);
+  background:var(--surf2);border:1px solid var(--border);
+  color:var(--dim);font-size:1rem;
+}
+
+/* ===================== BOOKING ===================== */
+.sel-shop-banner{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,107,53,0.08);
+  border:1px solid rgba(255,107,53,0.2);
+  border-radius:var(--r);padding:14px;margin-bottom:20px;
+}
+.sel-shop-icon{font-size:1.8rem}
+.sel-shop-name{font-size:0.95rem;font-weight:700}
+.sel-shop-dist{font-size:0.8rem;color:var(--dim)}
+
+.form-sec{margin-bottom:22px}
+.form-sec h4{font-size:0.95rem;font-weight:700;margin-bottom:4px}
+.form-sec p{font-size:0.82rem;color:var(--dim);margin-bottom:12px}
+
+.toggle-group{display:flex;gap:10px;margin-bottom:4px}
+.tog-btn{
+  flex:1;padding:12px;border-radius:var(--r);
+  background:var(--surf2);border:2px solid var(--border);
+  color:var(--dim);font-size:0.88rem;font-weight:600;
+  text-align:center;transition:all var(--t);
+}
+.tog-btn.active{border-color:var(--primary);color:var(--text);background:rgba(255,107,53,0.08)}
+.tog-btn.active.tow{border-color:var(--blue);background:rgba(59,130,246,0.08);color:var(--text)}
+
+.tow-banner{
+  display:flex;gap:12px;
+  background:rgba(59,130,246,0.08);
+  border:1px solid rgba(59,130,246,0.25);
+  border-radius:var(--r);padding:14px;margin-bottom:14px;
+}
+.tow-banner .ti{font-size:1.8rem;flex-shrink:0}
+.tow-banner strong{display:block;font-size:0.9rem;font-weight:700;color:var(--blue)}
+.tow-banner p{font-size:0.8rem;color:var(--dim);margin-top:4px;line-height:1.5}
+.tow-banner .free-badge{
+  display:inline-block;margin-top:6px;
+  padding:2px 8px;border-radius:20px;
+  background:rgba(16,185,129,0.15);color:var(--green);
+  font-size:0.72rem;font-weight:700;
+}
+
+.time-slots{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.time-slot{
+  padding:8px 14px;border-radius:var(--r);
+  background:var(--surf2);border:1px solid var(--border);
+  color:var(--dim);font-size:0.85rem;font-weight:600;
+  transition:all var(--t);
+}
+.time-slot.active{
+  background:rgba(255,107,53,0.1);
+  border-color:var(--primary);color:var(--primary);
+}
+
+/* ===================== CONFIRMATION ===================== */
+#s7{background:radial-gradient(ellipse at top, #0d1830 0%, var(--bg) 70%)}
+.success-wrap{display:flex;flex-direction:column;align-items:center;padding:32px 20px;text-align:center}
+.check-ring{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(16,185,129,0.05));
+  border:3px solid var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.8rem;margin-bottom:20px;
+  animation:pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.conf-title{font-size:1.6rem;font-weight:900;margin-bottom:6px}
+.conf-id{
+  font-size:0.85rem;color:var(--dim);margin-bottom:24px;
+  font-family:monospace;
+  background:var(--surf);padding:6px 14px;border-radius:20px;border:1px solid var(--border);
+}
+.conf-detail{
+  width:100%;background:var(--surf);
+  border:1px solid var(--border);border-radius:var(--r2);
+  overflow:hidden;margin-bottom:12px;
+}
+.conf-row{
+  display:flex;gap:12px;padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  align-items:flex-start;
+}
+.conf-row:last-child{border-bottom:none}
+.conf-row-icon{font-size:1.2rem;width:28px;text-align:center;flex-shrink:0;margin-top:1px}
+.conf-row-label{font-size:0.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px}
+.conf-row-val{font-size:0.92rem;font-weight:600;color:var(--text);margin-top:2px}
+
+.assoc-card{
+  width:100%;background:linear-gradient(135deg,rgba(59,130,246,0.1),rgba(59,130,246,0.05));
+  border:1px solid rgba(59,130,246,0.25);border-radius:var(--r2);
+  padding:16px;margin-bottom:12px;
+}
+.assoc-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.assoc-avatar{
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),#2563eb);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;
+}
+.assoc-name{font-size:0.95rem;font-weight:700}
+.assoc-title{font-size:0.78rem;color:var(--dim)}
+.assoc-eta{
+  font-size:0.78rem;color:var(--blue);font-weight:600;
+  margin-top:2px;
+}
+.assoc-phone{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(59,130,246,0.1);border-radius:var(--r);
+  padding:10px 12px;font-size:0.88rem;
+}
+.assoc-phone a{color:var(--blue);font-weight:700}
+
+.tow-conf-card{
+  width:100%;background:rgba(16,185,129,0.08);
+  border:1px solid rgba(16,185,129,0.25);
+  border-radius:var(--r2);padding:16px;margin-bottom:12px;
+  text-align:left;
+}
+.tow-conf-card h4{color:var(--green);font-size:0.9rem;font-weight:700;margin-bottom:8px}
+.tow-conf-card p{font-size:0.82rem;color:var(--dim);line-height:1.5}
+.tow-free-note{
+  display:flex;align-items:center;gap:6px;
+  margin-top:10px;padding:8px;background:rgba(16,185,129,0.1);
+  border-radius:var(--r);font-size:0.8rem;color:var(--green);font-weight:700;
+}
+
+/* ===================== HIDDEN / UTIL ===================== */
+.hidden{display:none!important}
+.center{align-items:center;justify-content:center;text-align:center;padding:30px 24px}
+.mt8{margin-top:8px}
+.mt16{margin-top:16px}
+
+/* ===================== SCROLLBAR ===================== */
+::-webkit-scrollbar{width:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── INSTALL BANNERS ── -->
+  <div id="install-banner" class="hidden">
+    <span class="install-icon">📱</span>
+    <div class="install-text">
+      <strong>Install AutoCare AI</strong>
+      <span>Add to home screen for quick access</span>
+    </div>
+    <button class="btn-install" id="install-btn">Install</button>
+    <button class="btn-x" id="install-close">✕</button>
+  </div>
+  <div id="ios-hint" class="hidden">
+    <p>To install: tap <strong>Share</strong> <span style="font-size:1.2rem">⬆</span> then <strong>"Add to Home Screen"</strong></p>
+    <span class="arrow" id="ios-close">✕</span>
+  </div>
+
+  <!-- ══════════════ SCREEN 0 — SPLASH ══════════════ -->
+  <div class="screen active" id="s0">
+    <div class="splash-wrap">
+      <img src="icons/icon.svg" class="splash-logo" alt="AutoCare AI">
+      <h1 class="splash-title">Auto<span>Care</span></h1>
+      <p style="color:var(--primary);font-weight:700;font-size:1.1rem;margin-top:4px;letter-spacing:1px">AI</p>
+      <p class="splash-sub">Smart damage assessment &amp;<br>repair coordination</p>
+      <div class="splash-loader"><div class="splash-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 1 — WELCOME ══════════════ -->
+  <div class="screen" id="s1">
+    <div class="s-body">
+      <div class="hero" style="text-align:center;padding:32px 0 24px">
+        <span class="hero-icon" style="font-size:3.5rem;display:block;margin-bottom:14px">🚗</span>
+        <h1 style="font-size:2rem;font-weight:900;line-height:1.2">Welcome to<br><span style="color:var(--primary)">AutoCare AI</span></h1>
+        <p style="color:var(--dim);font-size:0.95rem;margin-top:10px;line-height:1.6">Get your car repaired by certified specialists near you — fast, reliable, free tow included.</p>
+      </div>
+      <div class="features">
+        <div class="feat">
+          <div class="feat-icon">📸</div>
+          <div class="feat-text">
+            <strong>AI Damage Detection</strong>
+            <span>Upload photos — our AI identifies damage type and severity instantly</span>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🏆</div>
+          <div class="feat-text">
+            <strong>Best Shop Matching</strong>
+            <span>Matched to certified experts specialising in your exact damage</span>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">🚐</div>
+          <div class="feat-text">
+            <strong>Free Tow Service</strong>
+            <span>Can't drive? We'll pick up your vehicle at zero cost to you</span>
+          </div>
+        </div>
+        <div class="feat">
+          <div class="feat-icon">✅</div>
+          <div class="feat-text">
+            <strong>Guaranteed Quality</strong>
+            <span>All shops are ASE/I-CAR certified with verified reviews</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer">
+      <button class="btn-primary" onclick="go(2)">
+        Start Damage Assessment
+        <span class="btn-arrow">→</span>
+      </button>
+      <p class="terms mt8">By continuing you agree to our <a href="#">Terms</a> &amp; <a href="#">Privacy Policy</a></p>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 2 — PHOTOS ══════════════ -->
+  <div class="screen" id="s2">
+    <div class="s-header">
+      <button class="back-btn" onclick="go(1)">←</button>
+      <div class="s-title">Damage Photos</div>
+      <div class="progress" style="margin-left:auto">
+        <div class="p-dot active" id="pd1"></div>
+        <div class="p-dot" id="pd2"></div>
+        <div class="p-dot" id="pd3"></div>
+      </div>
+    </div>
+    <div class="s-body">
+      <div class="step-head">
+        <h2>📸 Capture Damage</h2>
+        <p>Take clear photos of all damaged areas. Multiple angles help our AI assess better.</p>
+      </div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-in').click()">
+        <span class="uz-icon">📷</span>
+        <p class="uz-text">Tap to take photo or pick from gallery</p>
+        <p class="uz-hint">JPG · PNG · HEIC · up to 10 photos</p>
+      </div>
+      <input type="file" id="file-in" accept="image/*" multiple class="hidden">
+      <div class="photos-grid" id="photos-grid"></div>
+      <div class="tips">
+        <h4>📋 Tips for best results</h4>
+        <ul>
+          <li>Good natural or artificial lighting</li>
+          <li>Shoot from multiple angles</li>
+          <li>Include a close-up AND a wide-angle shot</li>
+          <li>Remove dirt/water covering damage if safe to do so</li>
+        </ul>
+      </div>
+    </div>
+    <div class="s-footer">
+      <button class="btn-primary" id="analyze-btn" disabled onclick="go(3)">
+        Analyse Damage
+        <span class="btn-arrow">→</span>
+      </button>
+      <p class="photo-hint" id="photo-hint">Add at least 1 photo to continue</p>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 3 — LOCATION ══════════════ -->
+  <div class="screen" id="s3">
+    <div class="s-header">
+      <button class="back-btn" onclick="go(2)">←</button>
+      <div class="s-title">Your Location</div>
+      <div class="progress" style="margin-left:auto">
+        <div class="p-dot done">✓</div>
+        <div class="p-dot active" id="pd2b"></div>
+        <div class="p-dot" id="pd3b"></div>
+      </div>
+    </div>
+    <div class="s-body">
+      <div class="loc-hero">
+        <span class="loc-icon">📍</span>
+        <h2 style="font-size:1.4rem;font-weight:800">Where are you?</h2>
+        <p style="color:var(--dim);font-size:0.88rem;margin-top:8px;line-height:1.5">We'll find the closest certified shops with expertise in your damage</p>
+      </div>
+      <button class="loc-btn" id="loc-btn" onclick="getGPS()">
+        <span>📡</span> Use My Current Location
+      </button>
+      <div class="divider">or enter manually</div>
+      <div class="field">
+        <label>City</label>
+        <input class="inp" id="city" type="text" placeholder="e.g. San Francisco" autocomplete="address-level2">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>State</label>
+          <input class="inp" id="state" type="text" placeholder="CA" maxlength="2" autocomplete="address-level1">
+        </div>
+        <div class="field">
+          <label>ZIP Code</label>
+          <input class="inp" id="zip" type="text" placeholder="94105" maxlength="6" inputmode="numeric">
+        </div>
+      </div>
+      <div class="loc-status hidden" id="loc-status"></div>
+    </div>
+    <div class="s-footer">
+      <button class="btn-primary" onclick="startAnalysis()">
+        Find Repair Shops
+        <span class="btn-arrow">→</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 4 — ANALYSIS ══════════════ -->
+  <div class="screen center" id="s4">
+    <div class="scan-wrap">
+      <div class="scan-ring r1"></div>
+      <div class="scan-ring r2"></div>
+      <div class="scan-ring r3"></div>
+      <div class="scan-core">🔍</div>
+    </div>
+    <h2 class="analysis-title">Analysing Damage…</h2>
+    <div class="a-steps">
+      <div class="a-step" id="as1"><div class="step-dot"></div><span>Scanning uploaded images</span></div>
+      <div class="a-step" id="as2"><div class="step-dot"></div><span>Detecting damage type</span></div>
+      <div class="a-step" id="as3"><div class="step-dot"></div><span>Assessing severity level</span></div>
+      <div class="a-step" id="as4"><div class="step-dot"></div><span>Finding nearby specialists</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 5 — RESULTS ══════════════ -->
+  <div class="screen" id="s5">
+    <div class="s-header">
+      <button class="back-btn" onclick="go(2)">↩ Retake</button>
+      <div class="s-title">Assessment</div>
+      <div class="progress" style="margin-left:auto">
+        <div class="p-dot done">✓</div>
+        <div class="p-dot done">✓</div>
+        <div class="p-dot active"></div>
+      </div>
+    </div>
+    <div class="s-body">
+      <div id="dmg-card"></div>
+      <div class="shops-head"><h3>🏆 Best Shops Near You</h3><span class="shops-count" id="shop-count"></span></div>
+      <p class="shops-sub">Ranked by expertise match &amp; distance</p>
+      <div class="shops-list" id="shops-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 6 — BOOKING ══════════════ -->
+  <div class="screen" id="s6">
+    <div class="s-header">
+      <button class="back-btn" onclick="go(5)">←</button>
+      <div class="s-title">Book Service</div>
+    </div>
+    <div class="s-body">
+      <div id="sel-shop-banner"></div>
+
+      <!-- Vehicle condition -->
+      <div class="form-sec">
+        <h4>🚗 Vehicle Condition</h4>
+        <p>Is your vehicle safe to drive to the shop?</p>
+        <div class="toggle-group">
+          <button class="tog-btn active" id="tog-yes" onclick="setDrivable(true)">✅ Yes, drivable</button>
+          <button class="tog-btn" id="tog-no" onclick="setDrivable(false)">🚛 Need a tow</button>
+        </div>
+      </div>
+
+      <!-- Tow info -->
+      <div id="tow-section" class="hidden">
+        <div class="tow-banner">
+          <div class="ti">🚐</div>
+          <div>
+            <strong>FREE Tow Service Included</strong>
+            <p>A certified associate will come to your location, assess the vehicle, and arrange towing to the shop. <strong>All tow charges are paid by the service center</strong> — zero cost to you.</p>
+            <span class="free-badge">✓ $0 Tow Charge for Customer</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Pickup / Current Location</label>
+          <input class="inp" id="pickup-addr" type="text" placeholder="Full address where vehicle is located" autocomplete="street-address">
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="form-sec">
+        <h4>📅 Schedule Pickup</h4>
+        <div class="field">
+          <label>Preferred Date</label>
+          <input class="inp" id="bk-date" type="date">
+        </div>
+        <div class="field">
+          <label>Preferred Time</label>
+          <div class="time-slots" id="time-slots">
+            <button class="time-slot" onclick="pickTime(this,'9:00 AM')">9:00 AM</button>
+            <button class="time-slot" onclick="pickTime(this,'11:00 AM')">11:00 AM</button>
+            <button class="time-slot" onclick="pickTime(this,'1:00 PM')">1:00 PM</button>
+            <button class="time-slot" onclick="pickTime(this,'3:00 PM')">3:00 PM</button>
+            <button class="time-slot" onclick="pickTime(this,'5:00 PM')">5:00 PM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="form-sec">
+        <h4>👤 Your Information</h4>
+        <div class="field">
+          <label>Full Name</label>
+          <input class="inp" id="cust-name" type="text" placeholder="John Smith" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input class="inp" id="cust-phone" type="tel" placeholder="+1 (555) 000-0000" autocomplete="tel">
+        </div>
+        <div class="field">
+          <label>Vehicle (Year, Make, Model, Color)</label>
+          <input class="inp" id="veh-info" type="text" placeholder="2021 Toyota Camry, White">
+        </div>
+        <div class="field">
+          <label>Additional Notes</label>
+          <textarea class="inp" id="bk-notes" placeholder="Any extra details about the damage or your situation…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="s-footer">
+      <button class="btn-primary green" onclick="confirmBooking()">
+        Confirm Booking
+        <span class="btn-arrow">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════ SCREEN 7 — CONFIRMATION ══════════════ -->
+  <div class="screen" id="s7">
+    <div class="s-body success-wrap">
+      <div class="check-ring">✓</div>
+      <h2 class="conf-title">Booking Confirmed!</h2>
+      <div class="conf-id" id="conf-id"></div>
+      <div id="conf-details"></div>
+      <div id="conf-assoc"></div>
+      <div id="conf-tow"></div>
+      <div style="width:100%;margin-top:4px">
+        <button class="btn-secondary" onclick="shareBooking()">📤 Share Booking Details</button>
+        <button class="btn-secondary" onclick="go(1)" style="margin-top:8px">🚗 Book Another Service</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* =====================================================================
+   DATA
+===================================================================== */
+const DAMAGE_TYPES = [
+  {
+    id:'collision', label:'Collision / Impact Damage', icon:'💥',
+    severity:'High', sColor:'#ef4444',
+    desc:'Structural damage from a collision. May involve frame, crumple zones, and airbags. Requires immediate professional assessment.',
+    specs:['collision','frame','bumper'],
+  },
+  {
+    id:'paint', label:'Paint Scratch / Scuff', icon:'🎨',
+    severity:'Low', sColor:'#10b981',
+    desc:'Surface-level paint damage affecting aesthetics but not structural integrity. Often correctable without a full respray.',
+    specs:['paint','scratch','panel'],
+  },
+  {
+    id:'dent', label:'Dent / Panel Damage', icon:'⚡',
+    severity:'Medium', sColor:'#f59e0b',
+    desc:'Body panel deformation from impact or hail. Paintless Dent Repair (PDR) may be possible if paint is intact.',
+    specs:['dent','door','panel','hail'],
+  },
+  {
+    id:'glass', label:'Windshield / Glass Damage', icon:'🔍',
+    severity:'Medium-High', sColor:'#f97316',
+    desc:'Glass damage affects visibility and structural integrity. Do not drive with a cracked windshield across your field of view.',
+    specs:['glass','windshield','window'],
+  },
+  {
+    id:'bumper', label:'Bumper Damage', icon:'🚗',
+    severity:'Medium', sColor:'#f59e0b',
+    desc:'Bumper cover or assembly damage from low-speed impacts. May hide underlying sensors or structural damage.',
+    specs:['bumper','collision','panel'],
+  },
+  {
+    id:'frame', label:'Frame / Structural Damage', icon:'🔩',
+    severity:'Critical', sColor:'#dc2626',
+    desc:'Damage to the vehicle frame or unibody structure. Vehicle may not be safe to drive. Requires specialist inspection immediately.',
+    specs:['frame','collision'],
+  },
+];
+
+const SHOPS = [
+  {
+    id:1, name:'AutoFix Pro Center',
+    rating:4.9, reviews:847, distance:0.8,
+    address:'245 Oak Street', phone:'(555) 234-5678',
+    specs:['collision','frame','bumper'],
+    certs:['ASE Master Certified','I-CAR Gold Class'],
+    avail:'Today, 3:00 PM', days:'3–5 days', cost:'$1,200–$2,800',
+    badge:'Top Rated', badgeColor:'var(--primary)',
+    assoc:{ name:'Mike Johnson', title:'Senior Service Advisor', phone:'(555) 234-5679', eta:'35–45 min' },
+  },
+  {
+    id:2, name:'PaintMasters Studio',
+    rating:4.8, reviews:523, distance:1.2,
+    address:'891 Maple Avenue', phone:'(555) 345-6789',
+    specs:['paint','scratch','panel'],
+    certs:['ASE Certified','PPG Diamond Certified'],
+    avail:'Today, 5:00 PM', days:'1–3 days', cost:'$300–$1,100',
+    badge:'Paint Expert', badgeColor:'var(--blue)',
+    assoc:{ name:'Sarah Chen', title:'Paint Specialist', phone:'(555) 345-6790', eta:'25–35 min' },
+  },
+  {
+    id:3, name:'QuickDent PDR Studio',
+    rating:4.7, reviews:392, distance:1.9,
+    address:'123 Elm Drive', phone:'(555) 456-7890',
+    specs:['dent','door','hail','panel'],
+    certs:['PDR Certified','ASE Certified'],
+    avail:'Tomorrow, 9:00 AM', days:'1–2 days', cost:'$150–$800',
+    badge:'Dent Expert', badgeColor:'var(--purple)',
+    assoc:{ name:'James Rodriguez', title:'PDR Technician', phone:'(555) 456-7891', eta:'40–55 min' },
+  },
+  {
+    id:4, name:'GlassTech Auto',
+    rating:4.8, reviews:267, distance:2.3,
+    address:'567 Pine Road', phone:'(555) 567-8901',
+    specs:['glass','windshield','window'],
+    certs:['Auto Glass Safety Council','Safelite Certified'],
+    avail:'Today, 4:00 PM', days:'Same day', cost:'$200–$600',
+    badge:'Glass Expert', badgeColor:'var(--cyan)',
+    assoc:{ name:'Tom Williams', title:'Glass Tech Advisor', phone:'(555) 567-8902', eta:'30–40 min' },
+  },
+  {
+    id:5, name:'Complete Auto Works',
+    rating:4.6, reviews:1205, distance:3.1,
+    address:'789 Cedar Boulevard', phone:'(555) 678-9012',
+    specs:['collision','paint','dent','glass','frame','bumper','panel','windshield'],
+    certs:['ASE Master Certified','I-CAR Platinum','OEM Authorized'],
+    avail:'Today, 6:00 PM', days:'2–7 days', cost:'$500–$5,000+',
+    badge:'Full Service', badgeColor:'var(--green)',
+    assoc:{ name:'Linda Park', title:'Customer Service Manager', phone:'(555) 678-9013', eta:'50–65 min' },
+  },
+];
+
+/* =====================================================================
+   STATE
+===================================================================== */
+const S = {
+  screen: 0,
+  photos: [],
+  location: null,
+  damage: null,
+  shopId: null,
+  drivable: true,
+  time: null,
+  bookingId: null,
+};
+
+/* =====================================================================
+   NAVIGATION
+===================================================================== */
+let installPrompt = null;
+
+function go(n) {
+  const cur = document.getElementById('s'+S.screen);
+  const nxt = document.getElementById('s'+n);
+  if (!nxt) return;
+  cur.classList.remove('active');
+  if (n > S.screen) cur.classList.add('leaving');
+  setTimeout(() => cur.classList.remove('leaving'), 400);
+  nxt.classList.add('active');
+  S.screen = n;
+  nxt.scrollTop = 0;
+}
+
+/* =====================================================================
+   SPLASH → AUTO ADVANCE
+===================================================================== */
+window.addEventListener('load', () => {
+  // Set min date for booking
+  const d = new Date(); d.setDate(d.getDate());
+  const dd = d.toISOString().split('T')[0];
+  document.getElementById('bk-date').min = dd;
+  document.getElementById('bk-date').value = dd;
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  }
+
+  // PWA install prompt
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    installPrompt = e;
+    setTimeout(() => showInstallBanner(), 8000);
+  });
+
+  // iOS detection
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = navigator.standalone === true;
+  if (isIOS && !isStandalone) {
+    setTimeout(() => {
+      document.getElementById('ios-hint').classList.remove('hidden');
+    }, 10000);
+  }
+
+  // Auto-advance splash
+  setTimeout(() => go(1), 2400);
+});
+
+function showInstallBanner() {
+  document.getElementById('install-banner').classList.remove('hidden');
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('install-btn')?.addEventListener('click', async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const res = await installPrompt.userChoice;
+    document.getElementById('install-banner').classList.add('hidden');
+  });
+  document.getElementById('install-close')?.addEventListener('click', () => {
+    document.getElementById('install-banner').classList.add('hidden');
+  });
+  document.getElementById('ios-close')?.addEventListener('click', () => {
+    document.getElementById('ios-hint').classList.add('hidden');
+  });
+});
+
+/* =====================================================================
+   PHOTO HANDLING
+===================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  const fileIn = document.getElementById('file-in');
+  fileIn.addEventListener('change', e => handleFiles(e.target.files));
+
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    handleFiles(e.dataTransfer.files);
+  });
+});
+
+function handleFiles(files) {
+  const arr = Array.from(files).slice(0, 10 - S.photos.length);
+  arr.forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    S.photos.push({ url, name: file.name, size: file.size, type: file.type });
+  });
+  renderPhotos();
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photos-grid');
+  grid.innerHTML = S.photos.map((p, i) => `
+    <div class="photo-thumb">
+      <img src="${p.url}" alt="damage">
+      <button class="photo-del" onclick="removePhoto(${i})">✕</button>
+    </div>
+  `).join('');
+  const btn = document.getElementById('analyze-btn');
+  const hint = document.getElementById('photo-hint');
+  btn.disabled = S.photos.length === 0;
+  hint.textContent = S.photos.length === 0
+    ? 'Add at least 1 photo to continue'
+    : `${S.photos.length} photo${S.photos.length>1?'s':''} added`;
+}
+
+function removePhoto(i) {
+  URL.revokeObjectURL(S.photos[i].url);
+  S.photos.splice(i, 1);
+  renderPhotos();
+}
+
+/* =====================================================================
+   LOCATION
+===================================================================== */
+function getGPS() {
+  const btn = document.getElementById('loc-btn');
+  const status = document.getElementById('loc-status');
+  btn.textContent = '⏳ Detecting location…';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      S.location = { lat: pos.coords.latitude, lng: pos.coords.longitude, label: 'Current Location' };
+      status.className = 'loc-status ok';
+      status.innerHTML = '✓ Location detected — ready to find shops';
+      status.classList.remove('hidden');
+      btn.textContent = '✅ Location Detected';
+    },
+    err => {
+      status.className = 'loc-status err';
+      status.innerHTML = '⚠ Could not get GPS — please enter your city below';
+      status.classList.remove('hidden');
+      btn.textContent = '📡 Use My Current Location';
+      btn.disabled = false;
+    },
+    { timeout: 8000 }
+  );
+}
+
+function startAnalysis() {
+  const city = document.getElementById('city').value.trim();
+  const zip  = document.getElementById('zip').value.trim();
+  if (!S.location && !city && !zip) {
+    const s = document.getElementById('loc-status');
+    s.className = 'loc-status err';
+    s.innerHTML = '⚠ Please allow location access or enter your city';
+    s.classList.remove('hidden');
+    return;
+  }
+  if (!S.location) {
+    const state = document.getElementById('state').value.trim();
+    S.location = { label: [city, state, zip].filter(Boolean).join(', ') };
+  }
+  go(4);
+  runAnalysis();
+}
+
+/* =====================================================================
+   DAMAGE ANALYSIS (simulated AI)
+===================================================================== */
+function runAnalysis() {
+  const steps = ['as1','as2','as3','as4'];
+  const delays = [800, 1800, 2700, 3500];
+
+  steps.forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add('active');
+    }, delays[i] - 200);
+    setTimeout(() => {
+      document.getElementById(id).classList.remove('active');
+      document.getElementById(id).classList.add('done');
+      document.querySelector('#'+id+' .step-dot').textContent = '✓';
+    }, delays[i] + 600);
+  });
+
+  setTimeout(() => {
+    S.damage = pickDamage();
+    renderResults();
+    go(5);
+    // Reset step dots for next time
+    steps.forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active','done');
+      el.querySelector('.step-dot').textContent = '';
+    });
+  }, 4800);
+}
+
+function pickDamage() {
+  // Pseudo-random from photo data for deterministic feel
+  let seed = S.photos.reduce((a,p) => a + p.size, 0) % DAMAGE_TYPES.length;
+  if (isNaN(seed) || S.photos.length === 0) seed = Math.floor(Math.random() * DAMAGE_TYPES.length);
+  return DAMAGE_TYPES[seed];
+}
+
+/* =====================================================================
+   RESULTS
+===================================================================== */
+function renderResults() {
+  const dmg = S.damage;
+  const conf = 82 + Math.floor(Math.random() * 14); // 82–95%
+
+  // Damage card
+  document.getElementById('dmg-card').innerHTML = `
+    <div class="dmg-card">
+      <div class="dmg-head">
+        <span class="dmg-icon">${dmg.icon}</span>
+        <div>
+          <div class="dmg-type">${dmg.label}</div>
+          <span class="severity-pill" style="background:${dmg.sColor}20;color:${dmg.sColor}">
+            ● Severity: ${dmg.severity}
+          </span>
+        </div>
+      </div>
+      <p class="dmg-desc">${dmg.desc}</p>
+      <div class="confidence-wrap">
+        <span class="conf-label">AI Confidence</span>
+        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
+        <span class="conf-val">${conf}%</span>
+      </div>
+    </div>
+  `;
+
+  // Shops — filter by specialty, sort by distance
+  const matched = SHOPS.filter(sh =>
+    sh.specs.some(sp => dmg.specs.includes(sp))
+  ).sort((a,b) => a.distance - b.distance);
+
+  // Fill remaining with full-service
+  const extra = SHOPS.filter(sh => !matched.find(m => m.id === sh.id) && sh.specs.length >= 6);
+  const list = [...matched, ...extra].slice(0, 5);
+
+  document.getElementById('shop-count').textContent = `${list.length} found`;
+  document.getElementById('shops-list').innerHTML = list.map((sh, i) => shopCard(sh, i+1)).join('');
+}
+
+function starsHTML(r) {
+  const full = Math.floor(r);
+  const half = r % 1 >= 0.5 ? 1 : 0;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
+}
+
+function shopCard(sh, rank) {
+  return `
+  <div class="shop-card" id="shc-${sh.id}">
+    <div class="shop-top">
+      <div class="shop-num">${rank}</div>
+      <div class="shop-info">
+        <div class="shop-name">${sh.name}</div>
+        <div class="shop-rating">
+          <span class="stars">${starsHTML(sh.rating)}</span>
+          <span style="font-size:0.82rem;font-weight:700;color:var(--text)">${sh.rating}</span>
+          <span class="reviews">(${sh.reviews.toLocaleString()} reviews)</span>
+        </div>
+        <div style="font-size:0.78rem;color:var(--dim);margin-top:3px">📍 ${sh.distance} mi away · ${sh.address}</div>
+      </div>
+      <span class="shop-badge" style="color:${sh.badgeColor};background:${sh.badgeColor}20">${sh.badge}</span>
+    </div>
+    <div class="shop-meta">
+      <div class="meta-item">
+        <span class="meta-label">Next Available</span>
+        <span class="meta-val green">🟢 ${sh.avail}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Est. Repair Time</span>
+        <span class="meta-val">⏱ ${sh.days}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Est. Cost</span>
+        <span class="meta-val">💰 ${sh.cost}</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Distance</span>
+        <span class="meta-val">📍 ${sh.distance} mi</span>
+      </div>
+    </div>
+    <div class="shop-certs">
+      ${sh.certs.map(c => `<span class="cert-tag">✓ ${c}</span>`).join('')}
+    </div>
+    <div class="shop-actions">
+      <button class="btn-select" onclick="selectShop(${sh.id})">Select This Shop →</button>
+      <a class="btn-call" href="tel:${sh.phone}" title="Call shop">📞</a>
+    </div>
+  </div>`;
+}
+
+/* =====================================================================
+   BOOKING
+===================================================================== */
+function selectShop(id) {
+  S.shopId = id;
+  const sh = SHOPS.find(s => s.id === id);
+  document.getElementById('sel-shop-banner').innerHTML = `
+    <div class="sel-shop-banner">
+      <span class="sel-shop-icon">🔧</span>
+      <div>
+        <div class="sel-shop-name">${sh.name}</div>
+        <div class="sel-shop-dist">📍 ${sh.distance} mi · ${sh.address} · ${sh.phone}</div>
+      </div>
+    </div>`;
+  go(6);
+}
+
+function setDrivable(val) {
+  S.drivable = val;
+  document.getElementById('tog-yes').classList.toggle('active', val);
+  document.getElementById('tog-no').classList.toggle('active', !val);
+  document.getElementById('tog-no').classList.toggle('tow', !val);
+  document.getElementById('tow-section').classList.toggle('hidden', val);
+}
+
+function pickTime(btn, time) {
+  S.time = time;
+  document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function confirmBooking() {
+  const name  = document.getElementById('cust-name').value.trim();
+  const phone = document.getElementById('cust-phone').value.trim();
+  const date  = document.getElementById('bk-date').value;
+  if (!name)  { alert('Please enter your name.'); return; }
+  if (!phone) { alert('Please enter your phone number.'); return; }
+  if (!S.time) { alert('Please select a preferred time slot.'); return; }
+  if (!S.drivable && !document.getElementById('pickup-addr').value.trim()) {
+    alert('Please enter the pickup address.'); return;
+  }
+
+  S.bookingId = 'AC-' + new Date().getFullYear() + '-' + Math.random().toString(36).slice(2,7).toUpperCase();
+
+  const sh  = SHOPS.find(s => s.id === S.shopId);
+  const dmg = S.damage;
+  const dt  = new Date(date + 'T12:00:00');
+  const dateStr = dt.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  const veh = document.getElementById('veh-info').value.trim() || 'Not specified';
+
+  document.getElementById('conf-id').textContent = 'Booking ID: ' + S.bookingId;
+
+  document.getElementById('conf-details').innerHTML = `
+    <div class="conf-detail">
+      <div class="conf-row">
+        <span class="conf-row-icon">🔧</span>
+        <div>
+          <div class="conf-row-label">Repair Shop</div>
+          <div class="conf-row-val">${sh.name}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-row-icon">📍</span>
+        <div>
+          <div class="conf-row-label">Address</div>
+          <div class="conf-row-val">${sh.address}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-row-icon">💥</span>
+        <div>
+          <div class="conf-row-label">Damage Type</div>
+          <div class="conf-row-val">${dmg.icon} ${dmg.label}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-row-icon">📅</span>
+        <div>
+          <div class="conf-row-label">Scheduled For</div>
+          <div class="conf-row-val">${dateStr} at ${S.time}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-row-icon">🚗</span>
+        <div>
+          <div class="conf-row-label">Vehicle</div>
+          <div class="conf-row-val">${veh}</div>
+        </div>
+      </div>
+      <div class="conf-row">
+        <span class="conf-row-icon">💰</span>
+        <div>
+          <div class="conf-row-label">Estimated Cost</div>
+          <div class="conf-row-val">${sh.cost}</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('conf-assoc').innerHTML = `
+    <div class="assoc-card">
+      <div class="assoc-head">
+        <div class="assoc-avatar">👤</div>
+        <div>
+          <div class="assoc-name">${sh.assoc.name}</div>
+          <div class="assoc-title">${sh.assoc.title} · ${sh.name}</div>
+          <div class="assoc-eta">🕐 Arriving in ${sh.assoc.eta} after confirmation</div>
+        </div>
+      </div>
+      <div class="assoc-phone">
+        📞 Direct line: <a href="tel:${sh.assoc.phone}">${sh.assoc.phone}</a>
+      </div>
+    </div>`;
+
+  const towEl = document.getElementById('conf-tow');
+  if (!S.drivable) {
+    const addr = document.getElementById('pickup-addr').value.trim();
+    towEl.innerHTML = `
+      <div class="tow-conf-card">
+        <h4>🚐 Tow Service Confirmed</h4>
+        <p>A tow truck will be dispatched to:<br><strong>${addr}</strong></p>
+        <p style="margin-top:8px">Our associate <strong>${sh.assoc.name}</strong> will coordinate the pickup and ensure safe transport to <strong>${sh.name}</strong>.</p>
+        <div class="tow-free-note">✓ All towing charges paid by ${sh.name} — $0 to you</div>
+      </div>`;
+    towEl.classList.remove('hidden');
+  } else {
+    towEl.innerHTML = '';
+  }
+
+  // Save to localStorage
+  try {
+    const bookings = JSON.parse(localStorage.getItem('ac_bookings') || '[]');
+    bookings.push({ id: S.bookingId, shop: sh.name, date: dateStr, time: S.time, damage: dmg.label });
+    localStorage.setItem('ac_bookings', JSON.stringify(bookings));
+  } catch(e) {}
+
+  go(7);
+}
+
+/* =====================================================================
+   SHARE
+===================================================================== */
+async function shareBooking() {
+  const sh = SHOPS.find(s => s.id === S.shopId);
+  const txt = `AutoCare AI Booking Confirmed!\n\nID: ${S.bookingId}\nShop: ${sh.name}\nPhone: ${sh.phone}\nAddress: ${sh.address}\nDamage: ${S.damage.label}\n${S.drivable ? '' : '🚐 Free tow arranged\n'}\nPowered by AutoCare AI`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'AutoCare AI Booking', text: txt }); return; } catch(e) {}
+  }
+  try {
+    await navigator.clipboard.writeText(txt);
+    alert('Booking details copied to clipboard!');
+  } catch(e) { alert(txt); }
+}
+</script>
+</body>
+</html>

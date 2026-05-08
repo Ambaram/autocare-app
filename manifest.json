@@ -1,0 +1,38 @@
+{
+  "name": "AutoCare AI",
+  "short_name": "AutoCare",
+  "description": "Smart car damage assessment, AI diagnosis & nearest repair shop finder with free tow service",
+  "start_url": "./index.html",
+  "id": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0f1e",
+  "theme_color": "#0a0f1e",
+  "orientation": "portrait-primary",
+  "lang": "en-US",
+  "categories": ["automotive", "utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Report Damage",
+      "short_name": "Report",
+      "description": "Start a new damage assessment",
+      "url": "./index.html?action=report",
+      "icons": [{ "src": "icons/icon.svg", "sizes": "any" }]
+    }
+  ]
+}
